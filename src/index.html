@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroConnect - Tauri Enterprise Edition</title>
+  <!-- Iconos vectoriales FontAwesome y librerías ligeras vía CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="dark-mode">
+
+  <!-- PANTALLA DE LOGIN -->
+  <div id="login-screen" class="screen active">
+    <div class="login-card glass-panel animate-pop">
+      <div class="logo-badge"><i class="fa-solid fa-seedling"></i></div>
+      <h1>AgroConnect</h1>
+      <p class="subtitle">Soberanía Alimentaria - Tiquina Pro</p>
+
+      <div class="input-group">
+        <i class="fa-solid fa-user"></i>
+        <input type="text" id="login-user" placeholder="Usuario (admin o operador)" />
+      </div>
+      <div class="input-group">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" id="login-pass" placeholder="Contraseña (1234 o 0000)" />
+      </div>
+
+      <button id="btn-login" class="btn btn-primary btn-full">
+        <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+      </button>
+      <p id="login-error" class="error-text"></p>
+      <span class="hint">Demo: <b>admin / 1234</b> o <b>operador / 0000</b></span>
+    </div>
+  </div>
+
+  <!-- INTERFAZ PRINCIPAL -->
+  <div id="main-screen" class="screen">
+    <!-- Header Superior -->
+    <header class="topbar">
+      <div class="brand">
+        <i class="fa-solid fa-leaf text-green"></i>
+        <span>AgroConnect <b>v4.0 Tauri</b></span>
+        <span id="user-badge" class="badge-role"></span>
+      </div>
+      <div class="top-actions">
+        <button id="btn-currency" class="btn btn-info btn-sm">Moneda: Bs</button>
+        <button id="btn-theme" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-moon"></i> Oscuro
+        </button>
+        <button id="btn-logout" class="btn btn-danger btn-sm">
+          <i class="fa-solid fa-power-off"></i> Cerrar Sesión
+        </button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <!-- Barra Lateral -->
+      <aside class="sidebar">
+        <span class="menu-label">SECCIONES (ALT + 1-6)</span>
+        <button class="nav-btn active" data-section="inventario">
+          <i class="fa-solid fa-boxes-stacked"></i> 1. Inventario
+        </button>
+        <button class="nav-btn" data-section="tarjetas">
+          <i class="fa-solid fa-id-card"></i> 2. Tarjetas
+        </button>
+        <button class="nav-btn" data-section="analitica">
+          <i class="fa-solid fa-chart-column"></i> 3. Analítica
+        </button>
+        <button class="nav-btn" data-section="calculadora">
+          <i class="fa-solid fa-calculator"></i> 4. Calculadora Pro
+        </button>
+        <button class="nav-btn" data-section="respaldos">
+          <i class="fa-solid fa-floppy-disk"></i> 5. Respaldos
+        </button>
+        <button class="nav-btn" data-section="creditos">
+          <i class="fa-solid fa-circle-info"></i> 6. Créditos
+        </button>
+      </aside>
+
+      <!-- Área de Contenido Dinámico -->
+      <main class="content-area">
+
+        <!-- 1. INVENTARIO -->
+        <section id="sec-inventario" class="tab-section active">
+          <div class="inv-grid">
+            <!-- Formulario -->
+            <div class="panel form-panel">
+              <h2><i class="fa-solid fa-plus-circle text-green"></i> Gestión de Producto</h2>
+              <label>Nombre del Producto</label>
+              <input type="text" id="prod-name" placeholder="Ej. Trucha Fresca Titicaca" />
+
+              <label>Costo Total de Inversión (Bs)</label>
+              <input type="number" id="prod-cost" step="0.01" placeholder="0.00" />
+
+              <label>Cantidad Producida</label>
+              <input type="number" id="prod-qty" step="0.01" placeholder="0" />
+
+              <label>Unidad de Medida</label>
+              <select id="prod-unit">
+                <option value="Kilogramo (kg)">Kilogramo (kg)</option>
+                <option value="Arroba (@)">Arroba (@)</option>
+                <option value="Quintal (qq)">Quintal (qq)</option>
+                <option value="Unidad">Unidad</option>
+              </select>
+
+              <label>Contacto (Tel/WhatsApp)</label>
+              <input type="text" id="prod-phone" placeholder="+591 70000000" />
+
+              <button id="btn-save-prod" class="btn btn-primary btn-full mt-2">
+                <i class="fa-solid fa-save"></i> Guardar Producto
+              </button>
+              <button id="btn-demo" class="btn btn-purple btn-full mt-1">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Cargar Súper Demo Tiquina
+              </button>
+            </div>
+
+            <!-- Tabla y Estadísticas -->
+            <div class="panel table-panel">
+              <div class="table-toolbar">
+                <div class="search-box">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="search-input" placeholder="Buscar producto en tiempo real..." />
+                </div>
+                <div class="export-btns">
+                  <button id="btn-print-modal" class="btn btn-info btn-sm">
+                    <i class="fa-solid fa-print"></i> Etiqueta QR
+                  </button>
+                  <button id="btn-export-csv" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-file-csv"></i> CSV
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-wrapper">
+                <table id="inv-table">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Inversión</th>
+                      <th>Cantidad</th>
+                      <th>Unidad</th>
+                      <th>Precio Justo (+30%)</th>
+                      <th>Contacto</th>
+                      <th>Estado Stock</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inv-tbody"></tbody>
+                </table>
+              </div>
+
+              <div class="stats-bar">
+                <div>Inversión Total: <b id="stat-inv">0.00 Bs</b></div>
+                <div class="text-green">Ganancia Proyectada (30%): <b id="stat-profit">0.00 Bs</b></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. TARJETAS -->
+        <section id="sec-tarjetas" class="tab-section">
+          <h2>Catálogo Regional en Tarjetas</h2>
+          <div id="cards-container" class="cards-grid"></div>
+        </section>
+
+        <!-- 3. ANALÍTICA -->
+        <section id="sec-analitica" class="tab-section">
+          <h2>Analítica Financiera e Inversión Regional (Tiquina)</h2>
+          <div class="chart-container panel">
+            <canvas id="financeChart"></canvas>
+          </div>
+        </section>
+
+        <!-- 4. CALCULADORA PRO -->
+        <section id="sec-calculadora" class="tab-section">
+          <div class="panel calc-box">
+            <h2><i class="fa-solid fa-calculator text-green"></i> Calculadora de Precio Justo</h2>
+            <label>Inversión en Semillas / Insumos (Bs)</label>
+            <input type="number" id="calc-insumos" placeholder="Ej. 250" />
+
+            <label>Costo de Transporte / Logística (Bs)</label>
+            <input type="number" id="calc-transporte" placeholder="Ej. 50" />
+
+            <label>Cantidad Total Producida</label>
+            <input type="number" id="calc-cant" placeholder="Ej. 20" />
+
+            <button id="btn-calc" class="btn btn-primary btn-full mt-2">Calcular Precio Justo</button>
+            <div id="calc-result" class="calc-output">Ingrese los valores para calcular...</div>
+          </div>
+        </section>
+
+        <!-- 5. RESPALDOS -->
+        <section id="sec-respaldos" class="tab-section">
+          <div class="panel center-box">
+            <h2><i class="fa-solid fa-shield-halved text-green"></i> Centro de Seguridad y Respaldos</h2>
+            <p class="subtitle">Exporta o restaura tu base de datos local en formato JSON portable.</p>
+            <button id="btn-backup-export" class="btn btn-info btn-full mt-2">
+              <i class="fa-solid fa-download"></i> Descargar Respaldo (JSON)
+            </button>
+            <label class="btn btn-danger btn-full mt-1 file-upload-btn">
+              <i class="fa-solid fa-upload"></i> Restaurar Base de Datos JSON
+              <input type="file" id="btn-backup-import" accept=".json" hidden />
+            </label>
+          </div>
+        </section>
+
+        <!-- 6. CRÉDITOS -->
+        <section id="sec-creditos" class="tab-section">
+          <div class="panel center-box">
+            <div class="logo-badge"><i class="fa-solid fa-seedling"></i></div>
+            <h2>AgroConnect v4.0.0 Tauri Edition</h2>
+            <p class="text-green"><b>Sistema de Gestión Agroindustrial y Soberanía Alimentaria</b></p>
+            <div class="dev-card">
+              <span>Desarrollado con dedicación por:</span>
+              <h3>Rodrigo Leonel Huayta Mamani</h3>
+              <small>Comunidad de San Pedro de Tiquina, La Paz - Bolivia | 2026</small>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL DE IMPRESIÓN ESTILO WORD -->
+  <div id="print-modal" class="modal-backdrop">
+    <div class="modal-card animate-pop">
+      <h3><i class="fa-solid fa-print text-green"></i> Configuración de Impresión de Etiqueta</h3>
+      <div id="print-preview-box" class="print-area">
+        <div id="qr-container"></div>
+        <div id="print-details"></div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-do-print" class="btn btn-primary"><i class="fa-solid fa-print"></i> Imprimir Ahora</button>
+        <button id="btn-close-print" class="btn btn-secondary">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
