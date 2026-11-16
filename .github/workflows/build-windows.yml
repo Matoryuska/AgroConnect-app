@@ -4,26 +4,28 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build-tauri:
+  build-raw:
     runs-on: windows-latest
-    
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: setup node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: install Rust stable
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install dependencies (npm)
+      - name: Install frontend dependencies
         run: npm install
 
-      - name: Build Tauri App
-    uses: tauri-apps/tauri-action@v0.5.0
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    with:
-      args: --bundles nsis
+      - name: Build standalone executable with Cargo
+        run: cargo build --release --manifest-path src-tauri/Cargo.toml
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AgroConnect-Windows-Portable
+          path: src-tauri/target/release/agroconnect.exe
